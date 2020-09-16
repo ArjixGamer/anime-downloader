@@ -41,7 +41,8 @@ DEFAULT_CONFIG = {
     },
     'siteconfig': {
         'animefrenzy': {
-            'version': 'subbed'
+            'version': 'subbed',
+            'servers': ['trollvideo', 'mp4upload']
         },
         'animebinge': {
             'version': 'subbed',
