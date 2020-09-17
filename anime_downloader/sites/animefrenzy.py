@@ -6,24 +6,22 @@ import re
 
 
 class AnimeFrenzy(Anime, sitename='animefrenzy'):
-    sitename='animefrenzy'
+    sitename = 'animefrenzy'
+
     @classmethod
     def search(cls, query):
-        r = helpers.get("https://old.animefrenzy.org/search", params = {"term": query})
+        r = helpers.get("https://old.animefrenzy.org/search", params={"term": query})
         soup = helpers.soupify(r)
-        results = soup.find_all("a", href=lambda x: x and 'https://old.animefrenzy.org/anime/' in x)
-        filter_out_results = {}
-
-        for i in results:
-            filter_out_results[i['href']] = i.text
-        del filter_out_results[results[0]['href']]
-
+        # Warning, assuming only these links!
+        # Can cause errors in the future.
+        results = soup.select('a[href^="https://old.animefrenzy.org/anime/"]')
         search_results = [
             SearchResult(
-                title=value,
-                url=key
+                title=results[i].text,
+                url=results[i]['href']
             )
-            for key, value in filter_out_results.items()
+            # Skips the first result as it's "Random".
+            for i in range(len(results)) if i and results[i].text.strip()
         ]
         return search_results
 
@@ -51,9 +49,8 @@ class AnimeFrenzyEpisode(AnimeEpisode, sitename='animefrenzy'):
         scripts = soup.select('script')
 
         for i in scripts:
-
             if 'var episode_videos' in str(i):
-                sources = json.loads(re.search("\[.*host.*id.*?\]", str(i)).group())
+                sources = json.loads(re.search(r"\[.*host.*id.*?\]", str(i)).group())
 
         sources_list = []
         for i in sources:
